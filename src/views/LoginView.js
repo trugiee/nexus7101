@@ -81,6 +81,12 @@ export function renderLogin() {
               </div>
             </div>
             <button type="submit" class="w-full btn-primary py-4">Sign In</button>
+            <div class="relative flex py-2 items-center">
+                <div class="flex-grow border-t border-slate-100"></div>
+                <span class="flex-shrink mx-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Or continue with</span>
+                <div class="flex-grow border-t border-slate-100"></div>
+            </div>
+            <div id="googleBtnContainer" class="w-full flex justify-center"></div>
             <p class="text-center text-sm text-slate-400">Forget your password?</p>
             <div class="mt-4 pt-6 border-t border-slate-100 space-y-3">
               <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest text-center">Quick Access</p>
@@ -203,6 +209,47 @@ export function attachLoginListeners(renderFn) {
   if (toLogin)  toLogin.onclick  = switchToLogin;
 
   updateUI();
+
+  // Google Sign-In Initialization
+  const initGoogle = () => {
+    if (typeof google === 'undefined') {
+      setTimeout(initGoogle, 100);
+      return;
+    }
+
+    google.accounts.id.initialize({
+      client_id: "496700352537-9p20cbvauq9gib2q04sqpn4s0petq575.apps.googleusercontent.com", // USER: Replace with your real Client ID
+      callback: handleGoogleLogin
+    });
+
+    google.accounts.id.renderButton(
+      document.getElementById("googleBtnContainer"),
+      { theme: "outline", size: "large", width: "100%", shape: "pill" }
+    );
+  };
+
+  async function handleGoogleLogin(response) {
+    try {
+      const res = await auth.googleLogin(response.credential);
+      
+      state.user = res.data.user;
+      state.token = res.data.token;
+      localStorage.setItem('token', res.data.token);
+      localStorage.setItem('user', JSON.stringify(res.data.user));
+      
+      await initData();
+      
+      if (state.user.role === 'admin') navigate('admin', renderFn);
+      else if (state.user.role === 'inspector') navigate('inspector', renderFn);
+      else navigate('customer', renderFn);
+    } catch (err) {
+      alert("Google Login failed: " + (err.response?.data?.error || "Unknown error"));
+    }
+  }
+
+  // Make it global for the SDK
+  window.handleGoogleLogin = handleGoogleLogin;
+  initGoogle();
 
   // Handle Login
   document.getElementById('loginForm').onsubmit = async (e) => {

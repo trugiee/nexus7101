@@ -4,140 +4,226 @@ import { bookings, payments } from '../api.js';
 // Removed local booking variables - now using state.js
 
 export function renderCustomer() {
-  if (!state.user) return ''; // Safety check to prevent white screen
+  if (!state.user) return ''; 
   
   const today = new Date().toISOString().split('T')[0];
   const activeSubView = state.customerSubView || 'home';
-  const displayDate = activeSubView === 'home' ? today : (state.selectedDate || today);
-  const bookedOnDate = state.bookings.filter(b => b.date === displayDate && b.status === 'Confirmed').map(b => Number(b.cottageId));
+  
+  // Set default view to 'home' if not set
+  if (!state.customerSubView) state.customerSubView = 'home';
 
   return `
     <div class="min-h-screen py-6 px-4 sm:py-12 sm:px-6 md:py-20 md:px-8 flex flex-col items-center">
       
       <!-- High-Visibility Sanctuary Container -->
-      <div class="w-full max-w-5xl bg-white rounded-[2rem] sm:rounded-[3.5rem] shadow-[0_50px_100px_rgba(0,0,0,0.3)] p-6 sm:p-10 md:p-12 lg:p-20 space-y-10 md:space-y-20 border-2 border-slate-100 animate-scale-up">
+      <div class="w-full max-w-6xl bg-white rounded-[2rem] sm:rounded-[3.5rem] shadow-[0_50px_100px_rgba(0,0,0,0.15)] p-6 sm:p-10 md:p-12 lg:p-16 space-y-10 border border-slate-100 animate-scale-up">
         
         <!-- Header -->
-        <header class="flex flex-col sm:flex-row justify-between items-start sm:items-center pb-8 md:pb-12 border-b-2 border-slate-50 gap-4">
+        <header class="flex flex-col md:flex-row justify-between items-start md:items-center pb-8 border-b-2 border-slate-100 gap-6">
            <div>
-              <h1 class="text-2xl sm:text-3xl font-black text-slate-900 tracking-tighter italic">Hi, ${state.user ? state.user.name.split(' ')[0] : 'Guest'}!</h1>
-              <p class="text-xs font-black text-slate-900 uppercase tracking-widest mt-1">
-                 ${activeSubView === 'home' ? 'AVAILABLE COTTAGE TODAY' : `SANCTUARY AVAILABILITY: ${state.selectedDate || 'SELECT DATE'}`}
+              <h1 class="text-3xl sm:text-4xl font-black text-slate-900 tracking-tighter italic">Hi, ${state.user ? state.user.name.split(' ')[0] : 'Guest'}!</h1>
+              <p class="text-[10px] font-black text-slate-600 uppercase tracking-[0.4em] mt-2">
+                 Welcome to your CottageEase Sanctuary
               </p>
            </div>
-           <div class="flex flex-col items-start sm:items-end gap-3 w-full sm:w-auto">
-              <button id="logoutBtn" class="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 hover:text-rose-600 transition-colors">Logout</button>
-              <div class="flex gap-2">
-                 <button id="viewHistory" class="text-[10px] font-black uppercase tracking-[0.2em] ${activeSubView === 'history' ? 'bg-slate-900 text-white' : 'bg-white text-slate-900 border-2 border-slate-100'} px-4 py-2 rounded-xl hover:opacity-90 transition-all shadow-sm">
-                    History
-                 </button>
-                 <button id="navEarly" class="text-[10px] font-black uppercase tracking-[0.2em] ${activeSubView === 'early' ? 'bg-slate-900 text-white' : 'bg-emerald-500 text-white shadow-emerald-500/20'} px-4 py-2 rounded-xl hover:opacity-90 transition-all shadow-lg active:scale-95">
-                    ${activeSubView === 'home' ? 'EARLY BOOKING' : activeSubView === 'history' ? 'NEW BOOKING' : 'CHANGE DATE'}
-                 </button>
+           <div class="flex flex-wrap items-center gap-3 w-full md:w-auto">
+              <div class="flex bg-slate-100 p-1.5 rounded-2xl">
+                <button id="viewHome" class="px-6 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${activeSubView === 'home' ? 'bg-white text-slate-900 shadow-md' : 'text-slate-500 hover:text-slate-700'}">
+                  Explore
+                </button>
+                <button id="viewHistory" class="px-6 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${activeSubView === 'history' ? 'bg-white text-slate-900 shadow-md' : 'text-slate-500 hover:text-slate-700'}">
+                  History
+                </button>
               </div>
+              <button id="logoutBtn" class="ml-auto md:ml-4 text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 hover:text-rose-600 transition-colors">Logout</button>
            </div>
         </header>
 
-        ${activeSubView === 'early' && !state.selectedDate ? `
-          <!-- Date Selection Step -->
-          <div class="bg-slate-50 p-20 rounded-[3rem] border border-slate-100 shadow-inner text-center space-y-12 animate-fade-in">
-             <div class="space-y-4">
-                <h2 class="text-4xl font-black text-slate-900 tracking-tighter italic text-center">When are you coming?</h2>
-                <p class="text-slate-400 text-xs font-black uppercase tracking-[0.3em]">Select your future arrival date</p>
-             </div>
-             <div class="max-w-xs mx-auto relative group">
-                <input type="text" id="earlyDatePicker" class="w-full bg-white border-2 border-slate-100 rounded-2xl px-12 py-6 text-xl font-black text-slate-900 text-center focus:border-slate-900 transition-all shadow-xl cursor-pointer" placeholder="YYYY-MM-DD" readonly>
-                <svg class="w-6 h-6 absolute left-6 top-1/2 -translate-y-1/2 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
-             </div>
-             <button id="backToHome" class="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] hover:text-slate-900 transition-colors">Cancel and return to today</button>
-          </div>
-        ` : activeSubView === 'history' ? `
-          <!-- Booking History View -->
-          <div class="space-y-10 animate-fade-in">
-            <div class="flex justify-between items-end">
-              <div>
-                <h2 class="text-4xl font-black text-slate-900 tracking-tighter italic">My Bookings.</h2>
-                <p class="text-slate-400 text-[10px] font-black uppercase tracking-[0.3em] mt-2">All your sanctuary reservations</p>
-              </div>
-            </div>
-
-            <div class="grid gap-6">
-              ${state.bookings.filter(b => b.userId === (state.user?.id)).length === 0 ? `
-                <div class="bg-slate-50 p-20 rounded-[3rem] text-center border-2 border-dashed border-slate-200">
-                  <p class="text-slate-400 font-black uppercase tracking-widest text-xs">No bookings found yet</p>
-                </div>
-              ` : state.bookings.filter(b => b.userId === (state.user?.id)).sort((a, b) => b.date.localeCompare(a.date)).map(b => `
-                <div class="bg-white border-2 border-slate-100 rounded-3xl p-8 flex flex-wrap items-center justify-between gap-6 hover:border-slate-900 transition-all group">
-                  <div class="flex items-center gap-8">
-                    <div class="w-16 h-16 bg-slate-900 rounded-2xl flex flex-col items-center justify-center text-white">
-                      <span class="text-[10px] font-black uppercase opacity-60">Cottage</span>
-                      <span class="text-2xl font-black">#${b.cottageId}</span>
-                    </div>
-                    <div>
-                      <p class="text-xl font-black text-slate-900 tracking-tighter">${b.date}</p>
-                      <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-1">${b.id} • ₱${b.total.toLocaleString()}</p>
-                    </div>
-                  </div>
-                  <div class="flex items-center gap-6">
-                    <div class="text-right">
-                      <span class="px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest ${b.status === 'Confirmed' ? 'bg-emerald-100 text-emerald-600' : b.status === 'Pending' ? 'bg-amber-100 text-amber-600' : 'bg-rose-100 text-rose-600'}">
-                        ${b.status}
-                      </span>
-                    </div>
-                    <button class="view-receipt-btn bg-slate-900 text-white text-[10px] font-black uppercase tracking-widest px-8 py-4 rounded-xl hover:bg-black transition-all shadow-lg active:scale-95" data-id="${b.id}">
-                      View Pass
-                    </button>
-                  </div>
-                </div>
-              `).join('')}
-            </div>
-          </div>
-        ` : `
-          <!-- Cottage Grid -->
-          <div class="grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-5 gap-4 sm:gap-6 md:gap-8">
-            ${state.cottages.filter(c => c.active).map(c => {
-    const isBooked = bookedOnDate.includes(c.id);
-    return `
-                <div 
-                  class="cottage-card group transition-all ${isBooked ? 'opacity-20 cursor-not-allowed grayscale pointer-events-none' : 'cursor-pointer hover:-translate-y-2'}"
-                  ${isBooked ? '' : `data-id="${c.id}" data-price="${c.price}" data-date="${displayDate}"`}
-                >
-                  <div class="aspect-square bg-slate-50 rounded-3xl flex items-center justify-center border-2 border-slate-100 transition-all group-hover:bg-slate-900 group-hover:border-slate-900 group-hover:shadow-xl group-hover:shadow-slate-900/20">
-                     <span class="text-2xl font-black text-slate-400 group-hover:text-white transition-colors">${c.id}</span>
-                  </div>
-                  <div class="mt-4 flex justify-between items-center px-1">
-                     <span class="text-[10px] font-black text-slate-900 uppercase tracking-widest opacity-40 group-hover:opacity-100 transition-opacity">${c.category.split(' ')[0]}</span>
-                     <span class="text-[10px] font-black text-slate-900">₱${c.price.toLocaleString()}</span>
-                  </div>
-                </div>
-              `;
-  }).join('')}
-          </div>
-          
-          ${activeSubView === 'early' ? `
-             <div class="pt-10 flex justify-center">
-                <button id="backToHome" class="text-[10px] font-black text-slate-900 uppercase tracking-[0.2em] border-b-2 border-slate-900 pb-1">Reset to Today</button>
-             </div>
-          ` : ''}
-        `}
-
+        ${activeSubView === 'home' ? renderHomeView(today) : activeSubView === 'history' ? renderHistoryView() : ''}
 
         <div class="pt-10 text-center">
-           <p class="text-[10px] font-black text-slate-200 uppercase tracking-[0.6em]">CottageEase Managed Sanctuary</p>
+           <p class="text-[10px] font-black text-slate-400 uppercase tracking-[0.6em]">CottageEase Managed Sanctuary</p>
         </div>
       </div>
 
       <!-- Multi-Step Booking Modal -->
       <div id="bookingModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-xl z-[200] ${state.bookingStep === 'idle' ? 'hidden' : ''} flex items-center justify-center p-6">
         <div class="bg-white max-w-md w-full p-8 md:p-12 rounded-[3.5rem] shadow-3xl animate-scale-up border-2 border-white overflow-hidden relative">
-           
            ${renderModalContent()}
-
         </div>
       </div>
     </div>
   `;
 }
+
+function renderHomeView(today) {
+  const displayDate = state.selectedDate || today;
+  const bookedOnDate = state.bookings.filter(b => b.date === displayDate && b.status === 'Confirmed').map(b => Number(b.cottageId));
+  
+  // Logic for calendar
+  const now = new Date();
+  const currentYear = state.viewYear || now.getFullYear();
+  const currentMonth = state.viewMonth !== undefined ? state.viewMonth : now.getMonth();
+  
+  const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+  
+  return `
+    <div class="grid lg:grid-cols-12 gap-12 animate-fade-in">
+      <!-- Calendar Section -->
+      <div class="lg:col-span-5 space-y-8">
+        <div class="flex justify-between items-center">
+          <div>
+            <h2 class="text-2xl font-black text-slate-900 tracking-tighter italic">Select Date.</h2>
+            <p class="text-[10px] font-black text-slate-600 uppercase tracking-widest mt-1">${monthNames[currentMonth]} ${currentYear}</p>
+          </div>
+          <div class="flex gap-2">
+            <button id="prevMonth" class="p-2 hover:bg-slate-50 rounded-xl transition-colors text-slate-500 hover:text-slate-900">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 19l-7-7 7-7"></path></svg>
+            </button>
+            <button id="nextMonth" class="p-2 hover:bg-slate-50 rounded-xl transition-colors text-slate-500 hover:text-slate-900">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"></path></svg>
+            </button>
+          </div>
+        </div>
+
+        <div class="bg-slate-50/50 rounded-[2.5rem] p-6 border border-slate-100">
+          <div class="grid grid-cols-7 gap-1 mb-4">
+            ${['S', 'M', 'T', 'W', 'T', 'F', 'S'].map(d => `<div class="text-center text-[10px] font-black text-slate-400 py-2">${d}</div>`).join('')}
+            ${generateCalendarDays(currentYear, currentMonth, displayDate)}
+          </div>
+          <div class="flex items-center gap-4 mt-6 pt-6 border-t border-slate-100">
+            <div class="flex items-center gap-2">
+              <div class="w-2 h-2 rounded-full bg-slate-900"></div>
+              <span class="text-[9px] font-black text-slate-600 uppercase tracking-widest">Selected</span>
+            </div>
+            <div class="flex items-center gap-2">
+              <div class="w-2 h-2 rounded-full bg-rose-500"></div>
+              <span class="text-[9px] font-black text-slate-600 uppercase tracking-widest">Fully Booked</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Cottages Section -->
+      <div class="lg:col-span-7 space-y-8">
+        <div>
+          <h2 class="text-2xl font-black text-slate-900 tracking-tighter italic">Available Cottages.</h2>
+          <p class="text-[10px] font-black text-slate-600 uppercase tracking-widest mt-1">${displayDate === today ? 'TODAY, ' : ''}${new Date(displayDate).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}</p>
+        </div>
+
+        <div class="grid grid-cols-2 sm:grid-cols-3 gap-6">
+          ${state.cottages.filter(c => c.active).map(c => {
+            const isBooked = bookedOnDate.includes(c.id);
+            return `
+              <div 
+                class="cottage-card group transition-all relative ${isBooked ? 'opacity-40 cursor-not-allowed' : 'cursor-pointer hover:-translate-y-2'}"
+                ${isBooked ? '' : `data-id="${c.id}" data-price="${c.price}" data-date="${displayDate}"`}
+              >
+                <div class="aspect-[4/5] bg-slate-50 rounded-[2rem] flex flex-col items-center justify-center border-2 border-slate-100 transition-all group-hover:bg-slate-900 group-hover:border-slate-900 group-hover:shadow-2xl group-hover:shadow-slate-900/20 overflow-hidden">
+                   <div class="absolute top-4 left-4">
+                     <span class="text-[10px] font-black ${isBooked ? 'text-slate-600' : 'text-slate-500 group-hover:text-slate-400'} uppercase tracking-widest transition-colors">#${c.id}</span>
+                   </div>
+                   <div class="space-y-1 text-center px-4">
+                     <p class="text-sm font-black text-slate-900 group-hover:text-white transition-colors">${c.category}</p>
+                     <p class="text-[10px] font-black text-slate-600 group-hover:text-slate-400 transition-colors">₱${c.price.toLocaleString()}</p>
+                   </div>
+                   ${isBooked ? `
+                     <div class="absolute inset-0 flex items-center justify-center bg-white/60 backdrop-blur-[2px]">
+                       <span class="text-[9px] font-black uppercase tracking-[0.2em] text-rose-700 bg-rose-50 px-3 py-1.5 rounded-full border border-rose-200">Occupied</span>
+                     </div>
+                   ` : ''}
+                </div>
+              </div>
+            `;
+          }).join('')}
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function renderHistoryView() {
+  return `
+    <div class="space-y-10 animate-fade-in max-w-4xl mx-auto">
+      <div class="text-center">
+        <h2 class="text-3xl font-black text-slate-900 tracking-tighter italic">My Bookings.</h2>
+        <p class="text-slate-600 text-[10px] font-black uppercase tracking-[0.3em] mt-2">All your sanctuary reservations</p>
+      </div>
+
+      <div class="grid gap-6">
+        ${state.bookings.filter(b => b.userId === (state.user?.id)).length === 0 ? `
+          <div class="bg-slate-50 p-20 rounded-[3rem] text-center border-2 border-dashed border-slate-200">
+            <p class="text-slate-600 font-black uppercase tracking-widest text-xs">No bookings found yet</p>
+          </div>
+        ` : state.bookings.filter(b => b.userId === (state.user?.id)).sort((a, b) => b.date.localeCompare(a.date)).map(b => `
+          <div class="bg-white border border-slate-200 rounded-[2.5rem] p-8 flex flex-wrap items-center justify-between gap-6 hover:border-slate-900 hover:shadow-xl hover:shadow-slate-900/5 transition-all group">
+            <div class="flex items-center gap-8">
+              <div class="w-16 h-16 bg-slate-100 rounded-2xl flex flex-col items-center justify-center text-slate-900 group-hover:bg-slate-900 group-hover:text-white transition-colors">
+                <span class="text-[9px] font-black uppercase opacity-70">ID</span>
+                <span class="text-xl font-black">#${b.cottageId}</span>
+              </div>
+              <div>
+                <p class="text-xl font-black text-slate-900 tracking-tighter">${new Date(b.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</p>
+                <p class="text-[10px] font-black text-slate-600 uppercase tracking-widest mt-1">Ref: ${b.id.substring(0, 8)} • ₱${b.total.toLocaleString()}</p>
+              </div>
+            </div>
+            <div class="flex items-center gap-6">
+              <div class="text-right">
+                <span class="px-4 py-2 rounded-xl text-[9px] font-black uppercase tracking-widest ${b.status === 'Confirmed' ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : b.status === 'Pending' ? 'bg-amber-50 text-amber-700 border border-amber-200' : 'bg-rose-50 text-rose-700 border border-rose-200'}">
+                  ${b.status}
+                </span>
+              </div>
+              <button class="view-receipt-btn bg-slate-900 text-white text-[10px] font-black uppercase tracking-widest px-8 py-4 rounded-xl hover:bg-black transition-all shadow-lg active:scale-95" data-id="${b.id}">
+                Pass
+              </button>
+            </div>
+          </div>
+        `).join('')}
+      </div>
+    </div>
+  `;
+}
+
+function generateCalendarDays(year, month, selectedDate) {
+  const firstDay = new Date(year, month, 1).getDay();
+  const daysInMonth = new Date(year, month + 1, 0).getDate();
+  const days = [];
+  
+  // Empty slots for previous month
+  for (let i = 0; i < firstDay; i++) {
+    days.push('<div class="aspect-square"></div>');
+  }
+  
+  const today = new Date().toISOString().split('T')[0];
+  const numCottages = state.cottages.filter(c => c.active).length;
+
+  for (let d = 1; d <= daysInMonth; d++) {
+    const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+    const isSelected = dateStr === selectedDate;
+    const isPast = dateStr < today;
+    
+    // Check if fully booked
+    const bookedCount = state.bookings.filter(b => b.date === dateStr && b.status === 'Confirmed').length;
+    const isFullyBooked = bookedCount >= numCottages && numCottages > 0;
+
+    days.push(`
+      <div 
+        class="calendar-day aspect-square flex flex-col items-center justify-center rounded-2xl cursor-pointer transition-all relative group
+        ${isSelected ? 'bg-slate-900 text-white shadow-lg z-10' : 'hover:bg-slate-200'} 
+        ${isPast ? 'opacity-30 pointer-events-none' : 'text-slate-800'}
+        ${isFullyBooked && !isSelected ? 'text-rose-600 font-black' : ''}"
+        data-date="${dateStr}"
+      >
+        <span class="text-sm font-bold">${d}</span>
+        ${isFullyBooked ? '<div class="absolute bottom-1.5 w-1 h-1 rounded-full bg-rose-600"></div>' : ''}
+        ${isSelected ? '' : bookedCount > 0 && bookedCount < numCottages ? '<div class="absolute bottom-1.5 w-1 h-1 rounded-full bg-emerald-500"></div>' : ''}
+      </div>
+    `);
+  }
+  
+  return days.join('');
+}
+
 
 function renderModalContent() {
   switch (state.bookingStep) {
@@ -290,15 +376,9 @@ export function attachCustomerListeners(renderFn) {
     navigate('login', renderFn);
   };
 
-  const navEarly = document.getElementById('navEarly');
-  if (navEarly) navEarly.onclick = () => {
-    if (state.customerSubView === 'early' || state.customerSubView === 'history') {
-      state.customerSubView = 'home';
-      state.selectedDate = null;
-    } else {
-      state.customerSubView = 'early';
-      state.selectedDate = null;
-    }
+  const viewHome = document.getElementById('viewHome');
+  if (viewHome) viewHome.onclick = () => {
+    state.customerSubView = 'home';
     renderFn();
   };
 
@@ -308,24 +388,44 @@ export function attachCustomerListeners(renderFn) {
     renderFn();
   };
 
-  const backBtn = document.getElementById('backToHome');
-  if (backBtn) backBtn.onclick = () => {
-    state.customerSubView = 'home';
-    state.selectedDate = null;
+  // Calendar Listeners
+  const prevMonth = document.getElementById('prevMonth');
+  if (prevMonth) prevMonth.onclick = () => {
+    const now = new Date();
+    if (state.viewMonth === undefined) {
+      state.viewMonth = now.getMonth();
+      state.viewYear = now.getFullYear();
+    }
+    state.viewMonth--;
+    if (state.viewMonth < 0) {
+      state.viewMonth = 11;
+      state.viewYear--;
+    }
     renderFn();
   };
 
-  const datePicker = document.getElementById('earlyDatePicker');
-  if (datePicker) {
-    flatpickr(datePicker, {
-      minDate: "today",
-      dateFormat: "Y-m-d",
-      onChange: (selectedDates, dateStr) => {
-        state.selectedDate = dateStr;
-        renderFn();
-      }
-    });
-  }
+  const nextMonth = document.getElementById('nextMonth');
+  if (nextMonth) nextMonth.onclick = () => {
+    const now = new Date();
+    if (state.viewMonth === undefined) {
+      state.viewMonth = now.getMonth();
+      state.viewYear = now.getFullYear();
+    }
+    state.viewMonth++;
+    if (state.viewMonth > 11) {
+      state.viewMonth = 0;
+      state.viewYear++;
+    }
+    renderFn();
+  };
+
+  const calendarDays = document.querySelectorAll('.calendar-day[data-date]');
+  calendarDays.forEach(day => {
+    day.onclick = () => {
+      state.selectedDate = day.dataset.date;
+      renderFn();
+    };
+  });
 
   // Cottage selection
   const cottageCards = document.querySelectorAll('.cottage-card[data-id]');
@@ -355,7 +455,7 @@ export function attachCustomerListeners(renderFn) {
   const addonToggles = document.querySelectorAll('.addon-toggle');
   addonToggles.forEach(toggle => {
     toggle.onclick = () => {
-      const id = Number(toggle.dataset.id); // Convert to Number
+      const id = Number(toggle.dataset.id); 
       if (state.currentBooking.selectedAddons.includes(id)) {
         state.currentBooking.selectedAddons = state.currentBooking.selectedAddons.filter(a => a !== id);
       } else {
@@ -380,7 +480,6 @@ export function attachCustomerListeners(renderFn) {
   const payGCash = document.getElementById('payGCash');
   if (payGCash) payGCash.onclick = async () => {
     try {
-      // 1. Create booking in DB first
       const bookingRes = await bookings.create({
         cottageId: state.currentBooking.cottageId,
         date: state.currentBooking.date,
@@ -389,10 +488,8 @@ export function attachCustomerListeners(renderFn) {
         paymentMethod: 'GCash'
       });
 
-      // Save transaction ID to state
       state.currentBooking.transactionId = bookingRes.data.id;
 
-      // 2. Create PayMongo checkout session
       const checkoutRes = await payments.createCheckout({
         amount: state.currentBooking.total,
         description: `Cottage #${state.currentBooking.cottageId} Reservation`,
@@ -407,7 +504,8 @@ export function attachCustomerListeners(renderFn) {
       }
     } catch (error) {
       console.error("Booking Error:", error);
-      alert("Failed to create booking.");
+      const msg = error.response?.data?.error || "Failed to create booking.";
+      alert(msg);
     }
   };
 
@@ -420,7 +518,6 @@ export function attachCustomerListeners(renderFn) {
       if (bookingId) {
         targetBooking = state.bookings.find(b => b.id === bookingId);
       } else {
-        // Fallback for viewLatestReceipt button
         targetBooking = state.bookings.find(b => b.userId === (state.user?.id));
       }
 
@@ -428,7 +525,7 @@ export function attachCustomerListeners(renderFn) {
         state.currentBooking = {
           cottageId: targetBooking.cottageId,
           date: targetBooking.date,
-          price: targetBooking.total, // Using total as price here
+          price: targetBooking.total, 
           selectedAddons: targetBooking.addons || [],
           total: targetBooking.total,
           transactionId: targetBooking.id,
@@ -448,7 +545,6 @@ export function attachCustomerListeners(renderFn) {
 
   const downloadBtn = document.getElementById('downloadPass');
   if (downloadBtn) {
-    // Generate QR code if we are in receipt step
     if (state.bookingStep === 'receipt') {
       const qrCanvas = document.getElementById('qrCanvas');
       if (qrCanvas && typeof QRious !== 'undefined') {
@@ -462,7 +558,6 @@ export function attachCustomerListeners(renderFn) {
     }
 
     downloadBtn.onclick = async () => {
-      // Safety check for libraries
       if (typeof html2canvas === 'undefined') {
         alert("System still loading components... Please wait 3 seconds and try again.");
         return;
@@ -476,7 +571,6 @@ export function attachCustomerListeners(renderFn) {
       btn.innerHTML = "Generating Image...";
 
       try {
-        // Prepare for capture
         const originalTransform = receipt.style.transform;
         receipt.style.transform = 'none';
 
@@ -509,3 +603,4 @@ export function attachCustomerListeners(renderFn) {
     };
   }
 }
+

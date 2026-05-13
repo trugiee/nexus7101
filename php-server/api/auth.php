@@ -78,6 +78,57 @@ function handleAuth(string $method, string $action): void {
         return;
     }
 
+    // POST /api/auth/google
+    if ($method === 'POST' && $action === 'google') {
+        $idToken = $body['idToken'] ?? '';
+        
+        // In a real app, you MUST verify the token using Google's library or a JWT library.
+        // For this demo, we'll decode the payload part of the JWT (middle part)
+        $parts = explode('.', $idToken);
+        if (count($parts) < 2) {
+            http_response_code(400);
+            echo json_encode(['error' => 'Invalid Google token']);
+            return;
+        }
+        
+        $payload = json_decode(base64_decode($parts[1]), true);
+        $email = $payload['email'] ?? '';
+        $name = $payload['name'] ?? 'Google User';
+        $avatar = $payload['picture'] ?? '';
+        
+        if (!$email) {
+            http_response_code(400);
+            echo json_encode(['error' => 'Could not get email from Google']);
+            return;
+        }
+
+        // Check if user exists
+        $stmt = $db->prepare('SELECT * FROM users WHERE email = ?');
+        $stmt->execute([$email]);
+        $user = $stmt->fetch();
+
+        if (!$user) {
+            // Create user if not exists
+            $stmt = $db->prepare('INSERT INTO users (name, email, role, status, avatar) VALUES (?, ?, ?, ?, ?)');
+            $stmt->execute([$name, $email, 'customer', 'approved', $avatar]);
+            
+            $stmt = $db->prepare('SELECT * FROM users WHERE email = ?');
+            $stmt->execute([$email]);
+            $user = $stmt->fetch();
+        }
+
+        $token = jwtEncode([
+            'id'     => $user['id'],
+            'email'  => $user['email'],
+            'role'   => $user['role'],
+            'status' => $user['status'],
+        ]);
+
+        unset($user['password']);
+        echo json_encode(['token' => $token, 'user' => $user]);
+        return;
+    }
+
     http_response_code(404);
     echo json_encode(['error' => 'Auth route not found']);
 }

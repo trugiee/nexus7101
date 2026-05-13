@@ -17,7 +17,8 @@ api.interceptors.request.use(config => {
 
 export const auth = {
   login: (email, password) => api.post('/auth/login', { email, password }),
-  register: (userData) => api.post('/auth/register', userData)
+  register: (userData) => api.post('/auth/register', userData),
+  googleLogin: (idToken) => api.post('/auth/google', { idToken })
 };
 
 export const cottages = {
