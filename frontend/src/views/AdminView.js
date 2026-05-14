@@ -71,8 +71,8 @@ export function renderAdmin() {
           <h3 class="text-2xl font-black text-black tracking-tighter italic mb-2">Are you sure?</h3>
           <p id="adminConfirmMsg" class="text-[10px] font-black text-black/40 uppercase tracking-widest mb-10">This action might be irreversible.</p>
           <div class="flex gap-4">
-            <button id="adminConfirmCancel" class="flex-1 py-5 bg-slate-50 text-black/40 rounded-2xl text-[10px] font-black uppercase tracking-widest">No, Cancel</button>
-            <button id="adminConfirmOk" class="flex-1 py-5 bg-black text-white rounded-2xl text-[10px] font-black uppercase tracking-widest shadow-xl shadow-black/20">Yes, Proceed</button>
+            <button id="cancelAdminConfirm" class="flex-1 py-5 bg-slate-50 text-black/40 rounded-2xl text-[10px] font-black uppercase tracking-widest">No, Cancel</button>
+            <button id="executeAdminConfirm" class="flex-1 py-5 bg-black text-white rounded-2xl text-[10px] font-black uppercase tracking-widest shadow-xl shadow-black/20">Yes, Proceed</button>
           </div>
         </div>
       </div>
