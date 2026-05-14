@@ -23,8 +23,10 @@ RUN apt-get update && apt-get install -y \
     && rm -rf /var/lib/apt/lists/* \
     && docker-php-ext-install pdo_sqlite
 
-# Enable Apache modules
-RUN a2enmod rewrite
+# Enable Apache modules and fix MPM conflict
+RUN a2dismod mpm_event && \
+    a2enmod mpm_prefork && \
+    a2enmod rewrite
 
 # Copy built Vite frontend → Apache web root
 COPY --from=builder /app/dist /var/www/html
