@@ -62,34 +62,6 @@ export function renderAdmin() {
         ${renderActiveTab(activeTab)}
       </main>
     </div>
-
-    <!-- QR Verification Modal for Cash Payments -->
-    <div id="qrVerifyModal" class="fixed inset-0 bg-black/60 backdrop-blur-xl z-[550] hidden flex items-center justify-center p-6">
-      <div class="bg-white max-w-md w-full p-10 rounded-[3rem] shadow-3xl animate-scale-up border-2 border-white text-center">
-         <div class="mb-6">
-            <h3 class="text-2xl font-black text-black tracking-tighter italic">Verify QR Pass</h3>
-            <p class="text-[10px] font-black text-black/40 uppercase tracking-widest mt-2">Scan customer's QR to confirm payment</p>
-         </div>
-         
-         <div class="relative bg-slate-100 rounded-3xl overflow-hidden aspect-square mb-8">
-            <video id="qrVerifyVideo" class="w-full h-full object-cover"></video>
-            <canvas id="qrVerifyCanvas" class="hidden"></canvas>
-            <div class="absolute inset-0 border-[30px] border-black/20"></div>
-            <div class="absolute inset-[15%] border-2 border-white/50 rounded-2xl animate-pulse"></div>
-         </div>
-         
-         <div class="space-y-4">
-            <p id="qrVerifyStatus" class="text-[10px] font-black text-black/40 uppercase tracking-widest">Target ID: <span id="targetBookingId" class="text-black font-black"></span></p>
-            
-            <div class="relative pt-2">
-               <input type="text" id="manualIdInput" class="w-full bg-slate-50 border-2 border-slate-100 rounded-xl px-4 py-3 text-sm font-bold text-center uppercase tracking-widest focus:border-black outline-none" placeholder="Or Enter ID Manually">
-               <button id="verifyIdManually" class="w-full mt-2 bg-black text-white font-black py-4 rounded-xl uppercase text-[10px] tracking-widest hover:bg-black transition-all">Verify & Confirm Payment</button>
-            </div>
-
-            <button id="closeQrVerify" class="w-full bg-slate-100 text-black/40 font-black py-4 rounded-xl uppercase text-[10px] tracking-widest hover:bg-slate-200 transition-all mt-4">Cancel</button>
-         </div>
-      </div>
-    </div>
   `;
 }
 
@@ -332,6 +304,32 @@ function renderHomeView() {
 
       <!-- Premium Toast Container -->
       <div id="adminToastContainer" class="fixed bottom-10 right-10 z-[1000] flex flex-col gap-4 pointer-events-none"></div>
+
+      <!-- Missing QR Verify Modal (FIXED) -->
+      <div id="qrVerifyModal" class="fixed inset-0 bg-black/60 backdrop-blur-xl z-[2500] hidden flex items-center justify-center p-4 md:p-6">
+        <div class="bg-white w-full max-w-xl rounded-[3rem] p-8 md:p-12 shadow-3xl animate-scale-up text-center space-y-8 border-2 border-white overflow-hidden">
+          <div>
+            <h3 class="text-3xl font-black text-black tracking-tighter italic">Verify Payment.</h3>
+            <p class="text-[10px] font-black text-black/40 uppercase tracking-widest mt-1">Scan QR or enter ID for <span id="targetBookingId" class="text-emerald-500"></span></p>
+          </div>
+
+          <div class="relative aspect-video bg-black rounded-[2rem] overflow-hidden border-4 border-slate-100 group">
+            <video id="qrVerifyVideo" class="w-full h-full object-cover"></video>
+            <canvas id="qrVerifyCanvas" class="hidden"></canvas>
+            <div class="absolute inset-0 border-2 border-dashed border-emerald-500/50 m-10 rounded-2xl pointer-events-none animate-pulse"></div>
+          </div>
+
+          <div class="space-y-4">
+            <div class="relative">
+              <input type="text" id="manualIdInput" class="w-full bg-slate-50 border-2 border-slate-100 rounded-2xl px-6 py-5 font-black uppercase tracking-widest text-center focus:border-black outline-none transition-all" placeholder="OR ENTER ID MANUALLY">
+            </div>
+            <div class="flex gap-4">
+              <button id="closeQrVerify" class="flex-1 py-5 bg-slate-50 text-black/40 rounded-2xl text-[10px] font-black uppercase tracking-widest">Cancel</button>
+              <button id="verifyIdManually" class="flex-1 py-5 bg-black text-white rounded-2xl text-[10px] font-black uppercase tracking-widest shadow-xl shadow-black/20">Verify ID</button>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   `;
 }
@@ -564,6 +562,7 @@ function renderProductsView() {
         <form id="addCottageForm" class="space-y-4">
           <input type="text" id="cottageCategory" class="input-field" placeholder="Category Name" required>
           <input type="number" id="cottagePrice" class="input-field" placeholder="Price (₱)" required>
+          <textarea id="cottageAmenities" class="input-field h-24 resize-none" placeholder="Amenities (e.g. WiFi, Aircon, Pool Access)"></textarea>
           <div class="flex gap-4 pt-4">
             <button type="button" id="closeCottageModal" class="flex-1 py-4 bg-slate-50 text-black/40 rounded-2xl text-[10px] font-black uppercase tracking-widest">Cancel</button>
             <button type="submit" class="flex-1 py-4 bg-black text-white rounded-2xl text-[10px] font-black uppercase tracking-widest">Create</button>
@@ -912,7 +911,15 @@ export function attachAdminListeners(renderFn) {
   const userSearch = document.getElementById('userSearch');
   if (userSearch) {
     userSearch.value = state.userSearchTerm || '';
-    userSearch.oninput = (e) => { state.userSearchTerm = e.target.value; renderFn(); userSearch.focus(); };
+    userSearch.oninput = (e) => { 
+      state.userSearchTerm = e.target.value; 
+      renderFn(); 
+      const input = document.getElementById('userSearch');
+      if (input) {
+        input.focus();
+        input.setSelectionRange(input.value.length, input.value.length);
+      }
+    };
   }
 
   const logSearch = document.getElementById('logSearch');
@@ -1101,14 +1108,15 @@ export function attachAdminListeners(renderFn) {
       const newPrice = prompt(`Enter new price for Cottage #${id}:`, currentPrice);
       
       if (newPrice !== null && !isNaN(newPrice) && newPrice !== "") {
+      if (newPrice !== null && !isNaN(newPrice) && newPrice !== "") {
         try {
           await admin.updateCottage(id, { price: parseInt(newPrice) });
-          const { cottages: cottageApi } = await import('../api.js');
-          const res = await cottageApi.getAll();
+          const res = await cottages.getAll();
           state.cottages = res.data;
           renderFn();
           showAdminToast("Price updated", "success");
         } catch (err) { showAdminToast("Error updating price", "error"); }
+      }
       }
     };
   });
@@ -1120,8 +1128,7 @@ export function attachAdminListeners(renderFn) {
       const currentActive = btn.dataset.active === 'true' || btn.dataset.active === '1';
       try {
         await admin.updateCottage(id, { active: !currentActive });
-        const { cottages: cottageApi } = await import('../api.js');
-        const res = await cottageApi.getAll();
+        const res = await cottages.getAll();
         state.cottages = res.data;
         renderFn();
       } catch (err) { showAdminToast("Error updating status", "error"); }
