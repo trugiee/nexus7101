@@ -75,11 +75,11 @@ export function renderLogin() {
             <div class="space-y-4">
               <div class="space-y-1.5">
                 <label class="text-xs font-bold text-slate-400 uppercase tracking-widest ml-1">Email</label>
-                <input type="email" id="emailLogin" class="input-field" placeholder="email@example.com" value="customer@example.com" required>
+                <input type="email" id="emailLogin" class="input-field" placeholder="email@example.com" required>
               </div>
               <div class="space-y-1.5">
                 <label class="text-xs font-bold text-slate-400 uppercase tracking-widest ml-1">Password</label>
-                <input type="password" id="passLogin" class="input-field" placeholder="••••••••" value="password" required>
+                <input type="password" id="passLogin" class="input-field" placeholder="••••••••" required>
               </div>
             </div>
             <button type="submit" class="w-full btn-primary py-4">Sign In</button>
