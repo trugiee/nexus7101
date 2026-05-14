@@ -61,6 +61,50 @@ export function renderAdmin() {
       <main class="flex-1 p-6 md:p-12 overflow-y-auto">
         ${renderActiveTab(activeTab)}
       </main>
+
+      <!-- Confirmation Modal Container -->
+      <div id="adminConfirmModal" class="fixed inset-0 bg-black/60 backdrop-blur-xl z-[3000] hidden flex items-center justify-center p-6">
+        <div class="bg-white w-full max-w-md rounded-[3rem] p-10 shadow-3xl animate-scale-up text-center border-2 border-white">
+          <div class="w-20 h-20 bg-amber-50 rounded-full flex items-center justify-center mx-auto mb-6">
+            <svg class="w-10 h-10 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
+          </div>
+          <h3 class="text-2xl font-black text-black tracking-tighter italic mb-2">Are you sure?</h3>
+          <p id="adminConfirmMsg" class="text-[10px] font-black text-black/40 uppercase tracking-widest mb-10">This action might be irreversible.</p>
+          <div class="flex gap-4">
+            <button id="adminConfirmCancel" class="flex-1 py-5 bg-slate-50 text-black/40 rounded-2xl text-[10px] font-black uppercase tracking-widest">No, Cancel</button>
+            <button id="adminConfirmOk" class="flex-1 py-5 bg-black text-white rounded-2xl text-[10px] font-black uppercase tracking-widest shadow-xl shadow-black/20">Yes, Proceed</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Premium Toast Container -->
+      <div id="adminToastContainer" class="fixed bottom-10 right-10 z-[1000] flex flex-col gap-4 pointer-events-none"></div>
+
+      <!-- QR Verify Modal -->
+      <div id="qrVerifyModal" class="fixed inset-0 bg-black/60 backdrop-blur-xl z-[2500] hidden flex items-center justify-center p-4 md:p-6">
+        <div class="bg-white w-full max-w-xl rounded-[3rem] p-8 md:p-12 shadow-3xl animate-scale-up text-center space-y-8 border-2 border-white overflow-hidden">
+          <div>
+            <h3 class="text-3xl font-black text-black tracking-tighter italic">Verify Payment.</h3>
+            <p class="text-[10px] font-black text-black/40 uppercase tracking-widest mt-1">Scan QR or enter ID for <span id="targetBookingId" class="text-emerald-500"></span></p>
+          </div>
+
+          <div class="relative aspect-video bg-black rounded-[2rem] overflow-hidden border-4 border-slate-100 group">
+            <video id="qrVerifyVideo" class="w-full h-full object-cover"></video>
+            <canvas id="qrVerifyCanvas" class="hidden"></canvas>
+            <div class="absolute inset-0 border-2 border-dashed border-emerald-500/50 m-10 rounded-2xl pointer-events-none animate-pulse"></div>
+          </div>
+
+          <div class="space-y-4">
+            <div class="relative">
+              <input type="text" id="manualIdInput" class="w-full bg-slate-50 border-2 border-slate-100 rounded-2xl px-6 py-5 font-black uppercase tracking-widest text-center focus:border-black outline-none transition-all" placeholder="OR ENTER ID MANUALLY">
+            </div>
+            <div class="flex gap-4">
+              <button id="closeQrVerify" class="flex-1 py-5 bg-slate-50 text-black/40 rounded-2xl text-[10px] font-black uppercase tracking-widest">Cancel</button>
+              <button id="verifyIdManually" class="flex-1 py-5 bg-black text-white rounded-2xl text-[10px] font-black uppercase tracking-widest shadow-xl shadow-black/20">Verify ID</button>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   `;
 }
