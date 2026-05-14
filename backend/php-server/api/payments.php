@@ -62,8 +62,9 @@ function handlePayments(string $method): void {
     curl_close($ch);
 
     if ($httpCode !== 200) {
+        error_log("PayMongo Error (Code $httpCode): " . $response);
         http_response_code(500);
-        echo json_encode(['error' => 'Failed to create checkout session']);
+        echo json_encode(['error' => 'Failed to create checkout session. Check server logs.']);
         return;
     }
 
