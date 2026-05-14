@@ -71,8 +71,8 @@ export function renderAdmin() {
           <h3 class="text-2xl font-black text-black tracking-tighter italic mb-2">Are you sure?</h3>
           <p id="adminConfirmMsg" class="text-[10px] font-black text-black/40 uppercase tracking-widest mb-10">This action might be irreversible.</p>
           <div class="flex gap-4">
-            <button id="cancelAdminConfirm" class="flex-1 py-5 bg-slate-50 text-black/40 rounded-2xl text-[10px] font-black uppercase tracking-widest">No, Cancel</button>
-            <button id="executeAdminConfirm" class="flex-1 py-5 bg-black text-white rounded-2xl text-[10px] font-black uppercase tracking-widest shadow-xl shadow-black/20">Yes, Proceed</button>
+            <button id="adminConfirmCancel" class="flex-1 py-5 bg-slate-50 text-black/40 rounded-2xl text-[10px] font-black uppercase tracking-widest">No, Cancel</button>
+            <button id="adminConfirmOk" class="flex-1 py-5 bg-black text-white rounded-2xl text-[10px] font-black uppercase tracking-widest shadow-xl shadow-black/20">Yes, Proceed</button>
           </div>
         </div>
       </div>
@@ -609,6 +609,21 @@ function renderProductsView() {
           <textarea id="cottageAmenities" class="input-field h-24 resize-none" placeholder="Amenities (e.g. WiFi, Aircon, Pool Access)"></textarea>
           <div class="flex gap-4 pt-4">
             <button type="button" id="closeCottageModal" class="flex-1 py-4 bg-slate-50 text-black/40 rounded-2xl text-[10px] font-black uppercase tracking-widest">Cancel</button>
+            <button type="submit" class="flex-1 py-4 bg-black text-white rounded-2xl text-[10px] font-black uppercase tracking-widest">Create</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Add New Addon Modal (FIXED) -->
+    <div id="addAddonModal" class="fixed inset-0 bg-black/40 backdrop-blur-md z-[110] hidden flex items-center justify-center p-6">
+      <div class="bg-white w-full max-w-lg rounded-[2.5rem] p-10 shadow-2xl">
+        <h3 class="text-3xl font-black text-black mb-8 tracking-tighter">New Add-on.</h3>
+        <form id="addAddonForm" class="space-y-4">
+          <input type="text" id="addonName" class="input-field" placeholder="Add-on Name" required>
+          <input type="number" id="addonPrice" class="input-field" placeholder="Price (₱)" required>
+          <div class="flex gap-4 pt-4">
+            <button type="button" id="closeAddonModal" class="flex-1 py-4 bg-slate-50 text-black/40 rounded-2xl text-[10px] font-black uppercase tracking-widest">Cancel</button>
             <button type="submit" class="flex-1 py-4 bg-black text-white rounded-2xl text-[10px] font-black uppercase tracking-widest">Create</button>
           </div>
         </form>
