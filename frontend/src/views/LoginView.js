@@ -314,7 +314,7 @@ export function attachLoginListeners(renderFn) {
 
     google.accounts.id.renderButton(
       document.getElementById("googleBtnContainer"),
-      { theme: "outline", size: "large", width: "100%", shape: "pill" }
+      { theme: "outline", size: "large", width: "100%", shape: "pill", text: "signin_with" }
     );
   };
 
